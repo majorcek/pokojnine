@@ -7,7 +7,6 @@ library(reshape2)
 
 # povprečni prispevki v letih 2016-2019
 stopnje_prispevkov <- read_xlsx("povprecni prispevki.xlsx")
-print(head(stopnje_prispevkov))
 
 
 #funkcija, ki revalorizira plače
@@ -32,9 +31,7 @@ izracunaj_tabelo_za_nazaj <- function(prva_zaposlitev_leto, prva_zaposlitev_mese
     zadnje_delovno_leto <- izracun_leto
   }
   revalorizirana_prva_placa <- revaloriziraj(prva_placa, tabela_kolicnikov, prva_zaposlitev_leto, prva_zaposlitev_mesec)
-  print(revaloriziraj(1,tabela_kolicnikov, izracun_leto, izracun_mesec))
   revalorirana_na_izracun <- revalorizirana_prva_placa / revaloriziraj(1,tabela_kolicnikov, izracun_leto, izracun_mesec)
-  print(revalorirana_na_izracun)
   povprecna_mesecna_rast_place <- (aktualna_placa / revalorirana_na_izracun) ** (1/((izracun_leto - prva_zaposlitev_leto) * 12 + izracun_mesec - prva_zaposlitev_mesec))
 
   leta_nazaj <- c(rep.int(prva_zaposlitev_leto, (12 - prva_zaposlitev_mesec + 1)), sort(rep((prva_zaposlitev_leto + 1) : (zadnje_delovno_leto-1), 12)), rep.int(zadnje_delovno_leto, zadnji_delovni_mesec))
@@ -43,8 +40,8 @@ izracunaj_tabelo_za_nazaj <- function(prva_zaposlitev_leto, prva_zaposlitev_mese
   
   faktorji <- povprecna_mesecna_rast_place ** seq.int(from = 0, to = length(meseci_nazaj) - 1)
   tabela_nazaj$placa <- revalorirana_na_izracun * faktorji
-  print(head(tabela_nazaj))
-  tabela_nazaj
+
+    tabela_nazaj
 }
 
 
@@ -107,8 +104,6 @@ izracunaj_pokojninsko_osnovo <- function(tabela_kolicnikov, starost_leto, staros
   tabela_nazaj <- izracunaj_tabelo_za_nazaj(prva_zaposlitev_leto, prva_zaposlitev_mesec, izracun_leto, izracun_mesec, prva_placa, aktualna_placa, tabela_kolicnikov)
   tabela_naprej <- izracunaj_tabelo_za_naprej(izracun_leto, izracun_mesec, starost_leto, starost_mesec, upokojitev_leto, upokojitev_mesec, pricakovana_rast_place, aktualna_placa)
   tabela_skupna <- rbind(tabela_nazaj, tabela_naprej)
-  print(paste("skupna"))
-  print(head(tabela_skupna))
   tabela_letne_place <- head(tabela_skupna %>% group_by(leto) %>% summarise(letna_placa = sum(placa)), -1) 
   print(tabela_letne_place)
   
@@ -124,11 +119,8 @@ izracunaj_pokojninsko_osnovo <- function(tabela_kolicnikov, starost_leto, staros
 
     prispevki <- rev(c(prispevki2, prispevki1))
   }
-  print(paste("prispevki"))
-  print(prispevki)
   tabela_letne_place$letna_osnova <- tabela_letne_place$letna_placa * (1 - prispevki)
   tabela_letne_place$osnova <- tabela_letne_place$letna_osnova / 12
-  print(head(tabela_letne_place))
   cx <- c(0,cumsum(tabela_letne_place$osnova))
   povprecja <- NULL
   
@@ -137,7 +129,7 @@ izracunaj_pokojninsko_osnovo <- function(tabela_kolicnikov, starost_leto, staros
   } else {
     povprecja <- mean(tabela_letne_place$osnova)
   }
-  print(povprecja)
+
   pokojninska_osnova <- max(povprecja)
   print(paste0("osnova je ", pokojninska_osnova))
   pokojninska_osnova
